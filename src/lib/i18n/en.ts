@@ -13,8 +13,8 @@ export const enTranslations: Translations = {
     switchLang: 'Change language',
   },
   connect: {
-    title: 'OpenRouter Usage Lens',
-    subtitle: 'Track your balance, runway projection, and model usage locally in your browser.',
+    title: 'RouterLens',
+    subtitle: 'Track your balance, runway projection, and OpenRouter model usage directly in your browser.',
     apiKeyLabel: 'OpenRouter API Key',
     placeholder: 'sk-or-v1-...',
     verifying: 'Verifying key...',

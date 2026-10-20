@@ -13,8 +13,8 @@ export const idTranslations: Translations = {
     switchLang: 'Ganti bahasa',
   },
   connect: {
-    title: 'OpenRouter Usage Lens',
-    subtitle: 'Pantau saldo, estimasi runway, dan riwayat penggunaan model langsung dari browser.',
+    title: 'RouterLens',
+    subtitle: 'Pantau saldo, estimasi runway, dan riwayat penggunaan model OpenRouter langsung dari browser.',
     apiKeyLabel: 'OpenRouter API Key',
     placeholder: 'sk-or-v1-...',
     verifying: 'Memverifikasi Key...',

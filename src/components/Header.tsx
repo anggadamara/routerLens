@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight truncate">OpenRouter Lens</span>
+              <span className="font-bold text-sm tracking-tight truncate">RouterLens</span>
               <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
                 {keyLabel}
               </span>

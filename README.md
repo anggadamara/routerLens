@@ -1,10 +1,10 @@
-# OpenRouter Usage Lens
+# RouterLens
 
 [![AI-Generated](https://img.shields.io/badge/Code-100%25_AI_Generated-blueviolet?style=flat-square)](#)
 [![Built With](https://img.shields.io/badge/Model-Gemini_3.8_Flash-4285F4?style=flat-square&logo=google)](#)
 [![Method](https://img.shields.io/badge/Method-Prompting_Only-emerald?style=flat-square)](#)
 
-Dashboard web statis tanpa backend untuk memantau saldo, sisa hari (runway), dan penggunaan token model AI di OpenRouter.
+Dashboard web statis tanpa backend untuk memantau saldo, estimasi runway, dan riwayat penggunaan model OpenRouter secara privat.
 
 Semua request dikirim langsung dari browser ke API OpenRouter (CORS). API key dan histori data tersimpan lokal di browser (`localStorage` dan `IndexedDB`). Tidak ada server perantara atau telemetri pihak ketiga.
 
