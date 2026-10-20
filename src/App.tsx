@@ -1,122 +1,143 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect, useCallback } from 'react';
+import { getSavedApiKey, getStoredTelemetry, syncTelemetry, clearAllTelemetryData, type TelemetrySummary } from './lib/telemetry';
+import { ConnectModal } from './components/ConnectModal';
+import { Header } from './components/Header';
+import { HeroRunway } from './components/HeroRunway';
+import { TrendChart } from './components/TrendChart';
+import { ModelList } from './components/ModelList';
+import { SettingsModal } from './components/SettingsModal';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [apiKey, setApiKey] = useState<string | null>(getSavedApiKey());
+  const [summary, setSummary] = useState<TelemetrySummary | null>(getStoredTelemetry());
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('or_lens_theme') as 'light' | 'dark') || 'dark';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('or_lens_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const handleSync = useCallback(async () => {
+    if (!apiKey) return;
+    setIsSyncing(true);
+    setErrorBanner(null);
+
+    try {
+      const data = await syncTelemetry();
+      setSummary(data);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Gagal sinkronisasi data';
+      setErrorBanner(message);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [apiKey]);
+
+  useEffect(() => {
+    if (apiKey && !summary) {
+      handleSync();
+    }
+  }, [apiKey, summary, handleSync]);
+
+  const handleConnected = () => {
+    const key = getSavedApiKey();
+    setApiKey(key);
+    handleSync();
+  };
+
+  const handleDisconnect = async () => {
+    await clearAllTelemetryData();
+    setApiKey(null);
+    setSummary(null);
+  };
+
+  if (!apiKey) {
+    return <ConnectModal onConnected={handleConnected} />;
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-cloud dark:bg-obsidian text-slate-900 dark:text-cloud transition-colors pb-16">
+      <Header
+        keyLabel={summary?.keyLabel || 'Personal Key'}
+        fxRate={summary?.fxRate || 16500}
+        lastSyncTime={summary?.lastSyncTime || null}
+        isSyncing={isSyncing}
+        theme={theme}
+        onSync={handleSync}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onDisconnect={handleDisconnect}
+        onToggleTheme={toggleTheme}
+      />
 
-      <div className="ticks"></div>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* Error Banner */}
+        {errorBanner && (
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorBanner}</span>
+            </div>
+            <button
+              onClick={() => setErrorBanner(null)}
+              className="text-xs font-semibold hover:underline"
+            >
+              Tutup
+            </button>
+          </div>
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Loading overlay for initial sync */}
+        {isSyncing && !summary && (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 mx-auto animate-spin text-grape dark:text-volt" />
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Menghubungkan ke OpenRouter Gateway...
+            </p>
+          </div>
+        )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Active Dashboard */}
+        {summary && (
+          <>
+            <HeroRunway
+              remainingBalance={summary.remainingBalance}
+              remainingBalanceIdr={summary.remainingBalanceIdr}
+              runwayDays={summary.runwayDays}
+              todayUsage={summary.todayUsage}
+              todayUsageIdr={summary.todayUsageIdr}
+              p7DailyAverage={summary.p7DailyAverage}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TrendChart dailyTrend={summary.dailyTrend} />
+              <ModelList models={summary.modelBreakdown} />
+            </div>
+          </>
+        )}
+      </main>
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onDataChanged={() => {
+          setSummary(getStoredTelemetry());
+          setApiKey(getSavedApiKey());
+        }}
+      />
+    </div>
+  );
 }
-
-export default App

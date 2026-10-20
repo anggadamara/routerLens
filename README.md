@@ -1,32 +1,37 @@
-# React + TypeScript + Vite
+# OpenRouter Usage Lens (Client-Side)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Dashboard privat, tanpa backend, dan zero-telemetry untuk memantau saldo, estimasi runway, dan penggunaan model AI di OpenRouter.
 
-Currently, two official plugins are available:
+Dibangun dengan arsitektur Bring Your Own Key (BYOK): API key dan riwayat data kamu disimpan 100% di browser lokal (localStorage dan IndexedDB). Tidak ada data atau key yang dikirim ke server pihak ketiga.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Fitur Utama
 
-## React Compiler
+- Privasi Penuh (Zero-Backend): Request dikirim langsung dari browser ke openrouter.ai melalui CORS resmi.
+- Hero Runway & Burn-Rate Gauge: Menampilkan sisa saldo USD & IDR, laju pengeluaran hari ini, serta estimasi sisa hari (runway) berdasarkan konsumsi 7 hari terakhir.
+- Tren Harian 14 Hari: Visualisasi bar chart interaktif dengan tooltip inspeksi model dominan pada hari tersebut.
+- Hierarki Model: Breakdown konsumsi token (prompt dan completion) per model AI (Claude, DeepSeek, GPT, Llama, Mistral, dll).
+- Konversi Kurs Otomatis: Kurs USD ke IDR di-update harian via Frankfurter API publik dengan cache 24 jam.
+- Backup & Restore Mandiri: Export seluruh riwayat transaksi ke file JSON lokal, dan import kembali saat berganti perangkat.
+- Anti-Slop Design: Mode gelap (Obsidian) dan terang (Cloud) berstandar WCAG AA, bebas dekorasi berlebihan, dan responsif di smartphone.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Teknologi
 
-## Expanding the Oxlint configuration
+- Vite 6 + React 18 + TypeScript
+- Tailwind CSS v3 (OpenRouter design tokens)
+- idb-keyval (IndexedDB client-side persistence)
+- Vitest (Unit testing engine)
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Menjalankan Secara Lokal
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+`ash
+npm install
+npm run dev
+npm test
+npm run build
+`
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+File hasil build berada di folder dist/, siap di-host secara gratis di Vercel, Cloudflare Pages, atau GitHub Pages.
+
+## Lisensi
+
+MIT
