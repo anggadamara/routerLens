@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeSummaryFromGenerations, type GenerationRecord } from './telemetry';
+import { computeSummaryFromActivity, type ActivityRecord } from './telemetry';
 
 describe('telemetry computation engine', () => {
   it('computes remaining balance and currency conversion accurately', () => {
-    const generations: GenerationRecord[] = [];
-    const summary = computeSummaryFromGenerations(generations, 25.0, 5.0, 'Work Key', 16000);
+    const records: ActivityRecord[] = [];
+    const summary = computeSummaryFromActivity(records, 25.0, 5.0, 'Work Key', 16000);
 
     expect(summary.remainingBalance).toBe(20.0);
     expect(summary.remainingBalanceIdr).toBe(320000);
@@ -12,28 +12,30 @@ describe('telemetry computation engine', () => {
     expect(summary.dailyTrend).toHaveLength(14);
   });
 
-  it('aggregates model breakdown and ranking', () => {
-    const today = new Date().toISOString();
-    const generations: GenerationRecord[] = [
+  it('aggregates model breakdown and ranking from activity records', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const records: ActivityRecord[] = [
       {
-        id: 'gen-1',
-        created_at: today,
+        id: 'rec-1',
+        date: today,
         model: 'anthropic/claude-3.5-sonnet',
-        total_cost: 0.15,
-        tokens_prompt: 1000,
-        tokens_completion: 500,
+        requests: 10,
+        usage: 0.15,
+        prompt_tokens: 1000,
+        completion_tokens: 500,
       },
       {
-        id: 'gen-2',
-        created_at: today,
+        id: 'rec-2',
+        date: today,
         model: 'deepseek/deepseek-chat',
-        total_cost: 0.05,
-        tokens_prompt: 2000,
-        tokens_completion: 1000,
+        requests: 5,
+        usage: 0.05,
+        prompt_tokens: 2000,
+        completion_tokens: 1000,
       },
     ];
 
-    const summary = computeSummaryFromGenerations(generations, 10.0, 0.2, 'Test', 16000);
+    const summary = computeSummaryFromActivity(records, 10.0, 0.2, 'Test', 16000);
 
     expect(summary.todayUsage).toBeCloseTo(0.2, 5);
     expect(summary.modelBreakdown).toHaveLength(2);

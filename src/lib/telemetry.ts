@@ -1,13 +1,14 @@
 import { get, set, clear } from 'idb-keyval';
 
-export interface GenerationRecord {
+export interface ActivityRecord {
   id: string;
-  created_at: string;
+  date: string;
   model: string;
-  total_cost: number;
-  tokens_prompt: number;
-  tokens_completion: number;
-  latency?: number;
+  requests: number;
+  usage: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  provider_name?: string;
 }
 
 export interface TelemetrySummary {
@@ -42,7 +43,7 @@ const STORAGE_KEY_AUTH = 'or_lens_key';
 const STORAGE_KEY_LABEL = 'or_lens_label';
 const STORAGE_KEY_SUMMARY = 'or_lens_summary';
 const STORAGE_KEY_FX = 'or_lens_fx';
-const IDB_KEY_GENERATIONS = 'or_lens_generations';
+const IDB_KEY_ACTIVITY = 'or_lens_activity';
 const DEFAULT_FX_RATE = 16500;
 
 export function getSavedApiKey(): string | null {
@@ -100,7 +101,7 @@ export async function getExchangeRate(): Promise<number> {
       }
     }
   } catch {
-    // ignore parse error and fetch fresh
+    // ignore parse error
   }
 
   try {
@@ -118,8 +119,8 @@ export async function getExchangeRate(): Promise<number> {
   return DEFAULT_FX_RATE;
 }
 
-export function computeSummaryFromGenerations(
-  generations: GenerationRecord[],
+export function computeSummaryFromActivity(
+  records: ActivityRecord[],
   totalCredits: number,
   totalUsage: number,
   keyLabel: string,
@@ -144,30 +145,30 @@ export function computeSummaryFromGenerations(
     dayBuckets[dateKey] = { costUsd: 0, models: {} };
   }
 
-  for (const gen of generations) {
-    const genDate = gen.created_at ? gen.created_at.slice(0, 10) : '';
-    const cost = gen.total_cost || 0;
-    const model = gen.model || 'unknown';
+  for (const item of records) {
+    const itemDate = item.date ? item.date.slice(0, 10) : '';
+    const cost = item.usage || 0;
+    const model = item.model || 'unknown';
 
-    if (genDate === todayStr) {
+    if (itemDate === todayStr) {
       todayUsage += cost;
     }
 
-    if (new Date(gen.created_at) >= sevenDaysAgo) {
+    if (itemDate && new Date(itemDate) >= sevenDaysAgo) {
       p7Usage += cost;
     }
 
-    if (dayBuckets[genDate]) {
-      dayBuckets[genDate].costUsd += cost;
-      dayBuckets[genDate].models[model] = (dayBuckets[genDate].models[model] || 0) + cost;
+    if (dayBuckets[itemDate]) {
+      dayBuckets[itemDate].costUsd += cost;
+      dayBuckets[itemDate].models[model] = (dayBuckets[itemDate].models[model] || 0) + cost;
     }
 
     if (!modelStats[model]) {
       modelStats[model] = { costUsd: 0, promptTokens: 0, completionTokens: 0 };
     }
     modelStats[model].costUsd += cost;
-    modelStats[model].promptTokens += gen.tokens_prompt || 0;
-    modelStats[model].completionTokens += gen.tokens_completion || 0;
+    modelStats[model].promptTokens += item.prompt_tokens || 0;
+    modelStats[model].completionTokens += item.completion_tokens || 0;
   }
 
   const p7DailyAverage = p7Usage / 7;
@@ -239,45 +240,45 @@ export async function syncTelemetry(): Promise<TelemetrySummary> {
   const totalCredits = creditsJson?.data?.total_credits ?? 0;
   const totalUsage = creditsJson?.data?.total_usage ?? 0;
 
-  const existingGenerations: GenerationRecord[] = (await get(IDB_KEY_GENERATIONS)) || [];
-  const existingIds = new Set(existingGenerations.map((g) => g.id));
+  const existingRecords: ActivityRecord[] = (await get(IDB_KEY_ACTIVITY)) || [];
+  const existingIds = new Set(existingRecords.map((r) => r.id));
 
   try {
-    const genRes = await fetch('https://openrouter.ai/api/v1/generation?limit=100', {
+    const actRes = await fetch('https://openrouter.ai/api/v1/activity', {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
 
-    if (genRes.ok) {
-      const genJson = await genRes.json();
-      const rawList = Array.isArray(genJson?.data) ? genJson.data : [];
+    if (actRes.ok) {
+      const actJson = await actRes.json();
+      const rawList = Array.isArray(actJson?.data) ? actJson.data : [];
 
-      const newRecords: GenerationRecord[] = [];
       for (const item of rawList) {
-        if (item?.id && !existingIds.has(item.id)) {
-          newRecords.push({
-            id: item.id,
-            created_at: item.created_at || new Date().toISOString(),
-            model: item.model || 'unknown',
-            total_cost: item.total_cost || 0,
-            tokens_prompt: item.tokens_prompt || 0,
-            tokens_completion: item.tokens_completion || 0,
-            latency: item.latency,
-          });
-          existingIds.add(item.id);
+        const id = `${item.date}_${item.model}_${item.endpoint_id || ''}`;
+        const record: ActivityRecord = {
+          id,
+          date: item.date ? item.date.slice(0, 10) : new Date().toISOString().slice(0, 10),
+          model: item.model || item.model_permaslug || 'unknown',
+          requests: item.requests || 0,
+          usage: item.usage || 0,
+          prompt_tokens: item.prompt_tokens || 0,
+          completion_tokens: item.completion_tokens || 0,
+          provider_name: item.provider_name,
+        };
+
+        if (!existingIds.has(id)) {
+          existingRecords.push(record);
+          existingIds.add(id);
         }
       }
 
-      if (newRecords.length > 0) {
-        existingGenerations.push(...newRecords);
-        await set(IDB_KEY_GENERATIONS, existingGenerations);
-      }
+      await set(IDB_KEY_ACTIVITY, existingRecords);
     }
   } catch (err) {
-    console.warn('Gagal fetch generations terbaru, menggunakan data lokal:', err);
+    console.warn('Gagal fetch activity terbaru, menggunakan data lokal:', err);
   }
 
-  const summary = computeSummaryFromGenerations(
-    existingGenerations,
+  const summary = computeSummaryFromActivity(
+    existingRecords,
     totalCredits,
     totalUsage,
     keyLabel,
@@ -298,32 +299,32 @@ export function getStoredTelemetry(): TelemetrySummary | null {
 }
 
 export async function exportTelemetryJson(): Promise<string> {
-  const generations: GenerationRecord[] = (await get(IDB_KEY_GENERATIONS)) || [];
+  const records: ActivityRecord[] = (await get(IDB_KEY_ACTIVITY)) || [];
   const summary = getStoredTelemetry();
   return JSON.stringify({
     version: '1.0',
     exported_at: new Date().toISOString(),
     summary,
-    generations,
+    activity: records,
   }, null, 2);
 }
 
 export async function importTelemetryJson(jsonString: string): Promise<boolean> {
   try {
     const parsed = JSON.parse(jsonString);
-    if (!parsed || !Array.isArray(parsed.generations)) return false;
+    const list = Array.isArray(parsed?.activity) ? parsed.activity : [];
 
-    const existing: GenerationRecord[] = (await get(IDB_KEY_GENERATIONS)) || [];
+    const existing: ActivityRecord[] = (await get(IDB_KEY_ACTIVITY)) || [];
     const idSet = new Set(existing.map((g) => g.id));
 
-    for (const item of parsed.generations) {
+    for (const item of list) {
       if (item?.id && !idSet.has(item.id)) {
         existing.push(item);
         idSet.add(item.id);
       }
     }
 
-    await set(IDB_KEY_GENERATIONS, existing);
+    await set(IDB_KEY_ACTIVITY, existing);
     if (parsed.summary) {
       localStorage.setItem(STORAGE_KEY_SUMMARY, JSON.stringify(parsed.summary));
     }
