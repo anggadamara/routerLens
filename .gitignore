@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/model-icons/
 
 # Editor directories and files
 .vscode/*

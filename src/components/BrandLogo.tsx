@@ -1,72 +1,121 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface BrandLogoProps {
   modelName: string;
   className?: string;
 }
 
-export const BrandLogo: React.FC<BrandLogoProps> = ({ modelName, className = 'w-5 h-5' }) => {
+export const getModelIconPath = (modelName: string): string | null => {
   const name = modelName.toLowerCase();
 
-  if (name.includes('deepseek')) {
-    return (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-        <path d="M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.5 4 5.5" />
-        <circle cx="14" cy="10" r="1.5" fill="currentColor" />
-      </svg>
-    );
-  }
-
-  if (name.includes('meta') || name.includes('llama')) {
-    return (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M6 18c4-4 4-8 0-12m12 12c-4-4-4-8 0-12" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-    );
-  }
-
-  if (name.includes('mistral')) {
-    return (
-      <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <rect x="3" y="4" width="4" height="16" rx="1" />
-        <rect x="10" y="8" width="4" height="12" rx="1" />
-        <rect x="17" y="4" width="4" height="16" rx="1" />
-      </svg>
-    );
-  }
-
+  // Anthropic / Claude
   if (name.includes('anthropic') || name.includes('claude')) {
-    return (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m18 15-6-6-6 6" />
-        <circle cx="12" cy="12" r="9" />
-      </svg>
-    );
+    return '/model-icons/claude.webp';
   }
 
-  if (name.includes('openai') || name.includes('gpt')) {
-    return (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 3v18" />
-        <path d="M3 12h18" />
-        <circle cx="12" cy="12" r="4" />
-      </svg>
-    );
+  // DeepSeek
+  if (name.includes('deepseek')) {
+    return '/model-icons/deepseek.png';
   }
 
-  if (name.includes('google') || name.includes('gemini')) {
+  // Google / Gemini / Gemma
+  if (name.includes('google') || name.includes('gemini') || name.includes('gemma')) {
+    return '/model-icons/gemini.png';
+  }
+
+  // Meta / Llama
+  if (name.includes('meta') || name.includes('llama')) {
+    return '/model-icons/llama.png';
+  }
+
+  // Mistral AI / Mixtral / Codestral
+  if (name.includes('mistral') || name.includes('mixtral') || name.includes('codestral')) {
+    return '/model-icons/mistralai.png';
+  }
+
+  // Qwen
+  if (name.includes('qwen')) {
+    return '/model-icons/qwen2.png';
+  }
+
+  // OpenAI
+  if (name.includes('openai') || name.includes('gpt') || name.includes('chatgpt')) {
+    if (name.includes('o1') || name.includes('o3')) return '/model-icons/gpt-o1.webp';
+    if (name.includes('gpt-4')) return '/model-icons/gpt-4.webp';
+    return '/model-icons/openai.svg';
+  }
+
+  // Perplexity
+  if (name.includes('perplexity') || name.includes('sonar')) {
+    return '/model-icons/perplexityai.png';
+  }
+
+  // Cohere
+  if (name.includes('cohere') || name.includes('command')) {
+    return '/model-icons/cohere.png';
+  }
+
+  // Groq
+  if (name.includes('groq')) {
+    return '/model-icons/groq.svg';
+  }
+
+  // xAI / Grok
+  if (name.includes('x-ai') || name.includes('xai') || name.includes('grok')) {
+    return '/model-icons/xai.jpg';
+  }
+
+  // Microsoft / Phi
+  if (name.includes('microsoft') || name.includes('phi')) {
+    return '/model-icons/phi-2.png';
+  }
+
+  // Hugging Face
+  if (name.includes('huggingface') || name.includes('hf')) {
+    return '/model-icons/huggingface.png';
+  }
+
+  // Kimi / Moonshot
+  if (name.includes('kimi') || name.includes('moonshot')) {
+    return '/model-icons/kimi-dev.webp';
+  }
+
+  // OpenRouter
+  if (name.includes('openrouter')) {
+    return '/model-icons/openrouterai.png';
+  }
+
+  return null;
+};
+
+export const BrandLogo: React.FC<BrandLogoProps> = ({ modelName, className = 'w-5 h-5' }) => {
+  const [hasError, setHasError] = useState(false);
+  const iconPath = getModelIconPath(modelName);
+
+  if (iconPath && !hasError) {
     return (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polygon points="12 2 15 9 22 12 15 15 12 22 9 15 2 12 9 9 12 2" />
-      </svg>
+      <img
+        src={iconPath}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        onError={() => setHasError(true)}
+        className={`${className} object-contain rounded-[4px]`}
+      />
     );
   }
 
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <rect x="4" y="4" width="16" height="16" rx="3" />
       <circle cx="12" cy="12" r="3" />
     </svg>
