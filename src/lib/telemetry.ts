@@ -104,7 +104,12 @@ export async function getExchangeRateMeta(forceFresh = false): Promise<FxMetadat
       const cached = localStorage.getItem(STORAGE_KEY_FX);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 && parsed.rate > 0) {
+        if (
+          Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 &&
+          typeof parsed.rate === 'number' &&
+          Number.isFinite(parsed.rate) &&
+          parsed.rate > 0
+        ) {
           return {
             rate: parsed.rate,
             updatedAt: new Date(parsed.timestamp).toISOString(),
@@ -121,7 +126,11 @@ export async function getExchangeRateMeta(forceFresh = false): Promise<FxMetadat
     const res = await fetch('https://api.frankfurter.dev/v1/latest?from=USD&to=IDR');
     if (res.ok) {
       const data = await res.json();
-      const rate = data?.rates?.IDR || DEFAULT_FX_RATE;
+      const rawRate = data?.rates?.IDR;
+      const rate =
+        typeof rawRate === 'number' && Number.isFinite(rawRate) && rawRate > 0
+          ? rawRate
+          : DEFAULT_FX_RATE;
       const now = Date.now();
       localStorage.setItem(STORAGE_KEY_FX, JSON.stringify({ rate, timestamp: now }));
       return {
@@ -337,22 +346,71 @@ export async function exportTelemetryJson(): Promise<string> {
 export async function importTelemetryJson(jsonString: string): Promise<boolean> {
   try {
     const parsed = JSON.parse(jsonString);
-    const list = Array.isArray(parsed?.activity) ? parsed.activity : [];
+    if (!parsed || typeof parsed !== 'object') return false;
 
-    const existing: ActivityRecord[] = (await get(IDB_KEY_ACTIVITY)) || [];
-    const idSet = new Set(existing.map((g) => g.id));
+    const hasActivity = Array.isArray(parsed.activity);
+    const hasSummary = Boolean(parsed.summary && typeof parsed.summary === 'object');
+    if (!hasActivity && !hasSummary) return false;
 
-    for (const item of list) {
-      if (item?.id && !idSet.has(item.id)) {
-        existing.push(item);
-        idSet.add(item.id);
+    if (hasActivity) {
+      const existing: ActivityRecord[] = (await get(IDB_KEY_ACTIVITY)) || [];
+      const idSet = new Set(existing.map((g) => g.id));
+
+      for (const item of parsed.activity) {
+        if (!item || typeof item !== 'object') continue;
+
+        const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : null;
+        const model = typeof item.model === 'string' && item.model.trim() ? item.model.trim() : null;
+        if (!id || !model) continue;
+
+        if (!idSet.has(id)) {
+          const validatedRecord: ActivityRecord = {
+            id,
+            model,
+            date:
+              typeof item.date === 'string' && item.date.length >= 10
+                ? item.date.slice(0, 10)
+                : new Date().toISOString().slice(0, 10),
+            requests:
+              typeof item.requests === 'number' && Number.isFinite(item.requests) && item.requests >= 0
+                ? Math.round(item.requests)
+                : 0,
+            usage:
+              typeof item.usage === 'number' && Number.isFinite(item.usage) && item.usage >= 0
+                ? item.usage
+                : 0,
+            prompt_tokens:
+              typeof item.prompt_tokens === 'number' && Number.isFinite(item.prompt_tokens) && item.prompt_tokens >= 0
+                ? Math.round(item.prompt_tokens)
+                : 0,
+            completion_tokens:
+              typeof item.completion_tokens === 'number' && Number.isFinite(item.completion_tokens) && item.completion_tokens >= 0
+                ? Math.round(item.completion_tokens)
+                : 0,
+            provider_name: typeof item.provider_name === 'string' ? item.provider_name : undefined,
+          };
+
+          existing.push(validatedRecord);
+          idSet.add(id);
+        }
+      }
+
+      await set(IDB_KEY_ACTIVITY, existing);
+    }
+
+    if (hasSummary) {
+      const s = parsed.summary;
+      if (
+        typeof s.keyLabel === 'string' &&
+        typeof s.totalCredits === 'number' &&
+        typeof s.totalUsage === 'number' &&
+        Array.isArray(s.dailyTrend) &&
+        Array.isArray(s.modelBreakdown)
+      ) {
+        localStorage.setItem(STORAGE_KEY_SUMMARY, JSON.stringify(s));
       }
     }
 
-    await set(IDB_KEY_ACTIVITY, existing);
-    if (parsed.summary) {
-      localStorage.setItem(STORAGE_KEY_SUMMARY, JSON.stringify(parsed.summary));
-    }
     return true;
   } catch {
     return false;

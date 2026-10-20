@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeSummaryFromActivity, type ActivityRecord } from './telemetry';
+import { computeSummaryFromActivity, importTelemetryJson, type ActivityRecord } from './telemetry';
 
 describe('telemetry computation engine', () => {
   it('computes remaining balance and currency conversion accurately', () => {
@@ -44,5 +44,13 @@ describe('telemetry computation engine', () => {
     expect(summary.modelBreakdown[0].percentage).toBe(75);
     expect(summary.modelBreakdown[1].model).toBe('deepseek/deepseek-chat');
     expect(summary.modelBreakdown[1].percentage).toBe(25);
+  });
+
+  it('rejects invalid or non-object JSON on import', async () => {
+    expect(await importTelemetryJson('')).toBe(false);
+    expect(await importTelemetryJson('not a json')).toBe(false);
+    expect(await importTelemetryJson('123')).toBe(false);
+    expect(await importTelemetryJson('null')).toBe(false);
+    expect(await importTelemetryJson('{"unrelated": true}')).toBe(false);
   });
 });

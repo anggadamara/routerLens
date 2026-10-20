@@ -55,6 +55,9 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected }) => {
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="sk-or-v1-..."
                 autoFocus
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 className="w-full pl-3.5 pr-10 py-3 rounded-xl border border-slate-300 dark:border-white/[0.1] bg-slate-50 dark:bg-white/[0.03] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-grape font-mono transition"
               />
