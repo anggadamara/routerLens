@@ -1,15 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getSavedApiKey, getStoredTelemetry, syncTelemetry, clearAllTelemetryData, type TelemetrySummary } from './lib/telemetry';
+import {
+  getSavedApiKey,
+  getStoredTelemetry,
+  syncTelemetry,
+  clearAllTelemetryData,
+  getMockTelemetrySummary,
+  type TelemetrySummary,
+} from './lib/telemetry';
 import { ConnectModal } from './components/ConnectModal';
 import { Header } from './components/Header';
 import { HeroRunway } from './components/HeroRunway';
 import { TrendChart } from './components/TrendChart';
 import { ModelList } from './components/ModelList';
 import { SettingsModal } from './components/SettingsModal';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [apiKey, setApiKey] = useState<string | null>(getSavedApiKey());
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [summary, setSummary] = useState<TelemetrySummary | null>(getStoredTelemetry());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isUpdatingFx, setIsUpdatingFx] = useState<boolean>(false);
@@ -33,6 +41,15 @@ export default function App() {
   };
 
   const handleSync = useCallback(async (forceFreshFx = false) => {
+    if (isDemoMode) {
+      setIsSyncing(true);
+      setTimeout(() => {
+        setSummary(getMockTelemetrySummary());
+        setIsSyncing(false);
+      }, 400);
+      return;
+    }
+
     if (!apiKey) return;
     setIsSyncing(true);
     setErrorBanner(null);
@@ -46,7 +63,7 @@ export default function App() {
     } finally {
       setIsSyncing(false);
     }
-  }, [apiKey]);
+  }, [apiKey, isDemoMode]);
 
   const handleRefreshFx = async () => {
     setIsUpdatingFx(true);
@@ -58,25 +75,40 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (apiKey && !summary) {
+    if (apiKey && !summary && !isDemoMode) {
       handleSync();
     }
-  }, [apiKey, summary, handleSync]);
+  }, [apiKey, summary, isDemoMode, handleSync]);
 
   const handleConnected = () => {
+    setIsDemoMode(false);
     const key = getSavedApiKey();
     setApiKey(key);
     handleSync();
   };
 
+  const handleEnterDemo = () => {
+    setIsDemoMode(true);
+    setSummary(getMockTelemetrySummary());
+  };
+
+  const handleExitDemo = () => {
+    setIsDemoMode(false);
+    setSummary(null);
+  };
+
   const handleDisconnect = async () => {
+    if (isDemoMode) {
+      handleExitDemo();
+      return;
+    }
     await clearAllTelemetryData();
     setApiKey(null);
     setSummary(null);
   };
 
-  if (!apiKey) {
-    return <ConnectModal onConnected={handleConnected} />;
+  if (!apiKey && !isDemoMode) {
+    return <ConnectModal onConnected={handleConnected} onTryDemo={handleEnterDemo} />;
   }
 
   return (
@@ -97,6 +129,24 @@ export default function App() {
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <div className="p-3.5 sm:p-4 rounded-xl bg-grape/10 dark:bg-volt/10 border border-grape/25 dark:border-volt/25 text-grape dark:text-volt text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span>
+                <strong>Mode Demo Aktif:</strong> Anda sedang menjelajahi fitur dengan data simulasi (tanpa API key).
+              </span>
+            </div>
+            <button
+              onClick={handleExitDemo}
+              className="px-3.5 py-1.5 rounded-lg bg-grape hover:bg-grape-hover text-white dark:bg-volt dark:text-slate-900 font-semibold text-xs transition active:scale-95 shadow-sm shrink-0 self-start sm:self-auto"
+            >
+              Hubungkan Key Asli
+            </button>
+          </div>
+        )}
+
         {/* Error Banner */}
         {errorBanner && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in">

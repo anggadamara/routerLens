@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Key } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Key, Sparkles } from 'lucide-react';
 import { validateAndSaveApiKey } from '../lib/telemetry';
 import { OpenRouterLensGlyph } from './BrandLogo';
 
 interface ConnectModalProps {
   onConnected: () => void;
+  onTryDemo: () => void;
 }
 
-export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected }) => {
+export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDemo }) => {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,14 +97,34 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected }) => {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.06] space-y-2">
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>100% Client-side. Key tersimpan eksklusif di localStorage browser kamu. Zero telemetry.</span>
+        <div className="relative my-4 flex items-center justify-center">
+          <div className="border-t border-slate-200 dark:border-white/[0.08] w-full" />
+          <span className="bg-white dark:bg-panel-dark px-2 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
+            atau
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onTryDemo}
+          className="w-full min-h-[42px] flex items-center justify-center gap-2 py-2 rounded-xl border border-slate-200 dark:border-white/[0.1] bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 text-xs font-semibold transition active:scale-[0.98]"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-grape dark:text-volt" />
+          <span>Coba Mode Demo (Data Simulasi Tanpa Key)</span>
+        </button>
+
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.06] space-y-2.5">
+          <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+            <span>
+              <strong>100% Client-Side:</strong> Key tersimpan eksklusif di <code className="text-[11px] font-mono bg-slate-100 dark:bg-white/[0.06] px-1 py-0.5 rounded">localStorage</code> browser Anda. Zero server, zero telemetri.
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Key className="w-3.5 h-3.5 shrink-0" />
-            <span>Belum punya key? <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-grape dark:text-volt hover:underline">Buka openrouter.ai/keys</a></span>
+          <div className="flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+            <Key className="w-4 h-4 text-grape dark:text-volt shrink-0 mt-0.5" />
+            <span>
+              <strong>Ragu masukin key?</strong> Buat key baru dengan <em>credit limit</em> terpisah di <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-grape dark:text-volt underline font-medium">openrouter.ai/keys</a> atau buka tab Network (F12) untuk verifikasi.
+            </span>
           </div>
         </div>
       </div>

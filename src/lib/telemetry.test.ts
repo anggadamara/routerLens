@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeSummaryFromActivity, importTelemetryJson, type ActivityRecord } from './telemetry';
+import {
+  computeSummaryFromActivity,
+  importTelemetryJson,
+  getMockTelemetrySummary,
+  type ActivityRecord,
+} from './telemetry';
 
 describe('telemetry computation engine', () => {
   it('computes remaining balance and currency conversion accurately', () => {
@@ -52,5 +57,14 @@ describe('telemetry computation engine', () => {
     expect(await importTelemetryJson('123')).toBe(false);
     expect(await importTelemetryJson('null')).toBe(false);
     expect(await importTelemetryJson('{"unrelated": true}')).toBe(false);
+  });
+
+  it('generates consistent simulated telemetry summary for demo mode', () => {
+    const mock = getMockTelemetrySummary();
+    expect(mock.keyLabel).toContain('Mock Data');
+    expect(mock.dailyTrend).toHaveLength(14);
+    expect(mock.modelBreakdown.length).toBeGreaterThan(0);
+    expect(mock.remainingBalance).toBeGreaterThan(0);
+    expect(mock.remainingBalanceIdr).toBe(mock.remainingBalance * mock.fxRate);
   });
 });

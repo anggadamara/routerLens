@@ -416,3 +416,79 @@ export async function importTelemetryJson(jsonString: string): Promise<boolean> 
     return false;
   }
 }
+
+export function getMockTelemetrySummary(): TelemetrySummary {
+  const fxRate = 16500;
+  const now = new Date();
+  const dailyTrend = [];
+  const models = [
+    'anthropic/claude-3.5-sonnet',
+    'openai/gpt-4o',
+    'deepseek/deepseek-chat',
+    'meta-llama/llama-3.3-70b-instruct',
+  ];
+
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = d.toISOString().slice(0, 10);
+    const cost = parseFloat((0.35 + Math.abs(Math.sin(i) * 0.25) + 0.1).toFixed(2));
+    dailyTrend.push({
+      date: dateStr,
+      costUsd: cost,
+      costIdr: Math.round(cost * fxRate),
+      topModel: models[i % models.length],
+    });
+  }
+
+  const modelBreakdown = [
+    {
+      model: 'anthropic/claude-3.5-sonnet',
+      costUsd: 4.85,
+      costIdr: Math.round(4.85 * fxRate),
+      promptTokens: 142500,
+      completionTokens: 48900,
+      percentage: 54.8,
+    },
+    {
+      model: 'openai/gpt-4o',
+      costUsd: 2.30,
+      costIdr: Math.round(2.30 * fxRate),
+      promptTokens: 86400,
+      completionTokens: 29100,
+      percentage: 26.0,
+    },
+    {
+      model: 'deepseek/deepseek-chat',
+      costUsd: 1.15,
+      costIdr: Math.round(1.15 * fxRate),
+      promptTokens: 210000,
+      completionTokens: 85000,
+      percentage: 13.0,
+    },
+    {
+      model: 'meta-llama/llama-3.3-70b-instruct',
+      costUsd: 0.55,
+      costIdr: Math.round(0.55 * fxRate),
+      promptTokens: 95000,
+      completionTokens: 32000,
+      percentage: 6.2,
+    },
+  ];
+
+  return {
+    keyLabel: 'Demo Key (Mock Data)',
+    totalCredits: 25.0,
+    totalUsage: 8.85,
+    remainingBalance: 16.15,
+    remainingBalanceIdr: Math.round(16.15 * fxRate),
+    runwayDays: 26,
+    todayUsage: 0.62,
+    todayUsageIdr: Math.round(0.62 * fxRate),
+    p7DailyAverage: 0.62,
+    fxRate,
+    fxUpdatedAt: new Date().toISOString(),
+    lastSyncTime: new Date().toISOString(),
+    dailyTrend,
+    modelBreakdown,
+  };
+}
