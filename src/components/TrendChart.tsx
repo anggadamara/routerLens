@@ -29,10 +29,10 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
     <div className="w-full rounded-2xl bg-white dark:bg-panel-dark border border-slate-200 dark:border-white/[0.08] p-5 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-grape dark:text-volt" />
+          <BarChart3 className="w-4 h-4 text-grape dark:text-volt" aria-hidden="true" />
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">Tren Pengeluaran 14 Hari</h2>
         </div>
-        <span className="text-xs text-slate-400">Puncak: {formatUsd(maxCost)}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-400">Puncak: {formatUsd(maxCost)}</span>
       </div>
 
       <div className="relative">
@@ -44,23 +44,34 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
             return (
               <div
                 key={item.date}
-                className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                tabIndex={0}
+                role="button"
+                aria-label={`Tanggal ${item.date}, pengeluaran ${formatUsd(item.costUsd)} (${formatRupiah(item.costIdr)})${item.topModel && item.topModel !== '-' ? `, model teratas ${item.topModel}` : ''}`}
+                className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative focus-ring rounded-md"
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
+                onFocus={() => setHoveredIdx(idx)}
+                onBlur={() => setHoveredIdx(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setHoveredIdx((prev) => (prev === idx ? null : idx));
+                  }
+                }}
               >
-                {/* Tooltip on hover */}
+                {/* Tooltip on hover/focus */}
                 {isHovered && (
                   <div className="absolute bottom-full mb-2 z-20 pointer-events-none bg-slate-900 dark:bg-slate-800 text-white rounded-xl p-2.5 shadow-xl text-xs whitespace-nowrap border border-white/10 animate-in fade-in zoom-in-95">
                     <div className="font-semibold text-slate-300">{item.date}</div>
                     <div className="font-mono text-sm font-bold text-volt mt-0.5">
                       {formatUsd(item.costUsd)}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-mono">
+                    <div className="text-[11px] text-slate-300 font-mono">
                       {formatRupiah(item.costIdr)}
                     </div>
                     {item.topModel && item.topModel !== '-' && (
-                      <div className="mt-1 pt-1 border-t border-white/10 text-[10px] text-slate-400">
-                        Top: <span className="text-slate-200 font-mono">{item.topModel.split('/')[1] || item.topModel}</span>
+                      <div className="mt-1 pt-1 border-t border-white/10 text-[10px] text-slate-300">
+                        Top: <span className="text-white font-mono">{item.topModel.split('/')[1] || item.topModel}</span>
                       </div>
                     )}
                   </div>
@@ -71,15 +82,15 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
                   style={{ height: `${heightPercent}%` }}
                   className={`w-full max-w-[28px] rounded-t-md transition-all duration-200 ${
                     isHovered
-                      ? 'bg-volt dark:bg-volt shadow-md shadow-volt/20'
+                      ? 'bg-grape dark:bg-volt shadow-md shadow-grape/25 dark:shadow-volt/20'
                       : item.costUsd > 0
                       ? 'bg-grape/80 dark:bg-grape hover:bg-grape'
-                      : 'bg-slate-100 dark:bg-white/[0.04]'
+                      : 'bg-slate-200/80 dark:bg-white/[0.08]'
                   }`}
                 />
 
                 {/* Date label */}
-                <span className="text-[10px] font-mono text-slate-400 mt-2 truncate w-full text-center">
+                <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 mt-2 truncate w-full text-center">
                   {formatDateLabel(item.date)}
                 </span>
               </div>

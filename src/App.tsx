@@ -131,16 +131,16 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
         {/* Demo Mode Banner */}
         {isDemoMode && (
-          <div className="p-3.5 sm:p-4 rounded-xl bg-grape/10 dark:bg-volt/10 border border-grape/25 dark:border-volt/25 text-grape dark:text-volt text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-grape/10 dark:bg-volt/10 border border-grape/25 dark:border-volt/25 text-grape dark:text-volt text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" role="status">
             <div className="flex items-center gap-2.5">
-              <Sparkles className="w-4 h-4 shrink-0" />
+              <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>
                 <strong>Mode Demo Aktif:</strong> Anda sedang menjelajahi fitur dengan data simulasi (tanpa API key).
               </span>
             </div>
             <button
               onClick={handleExitDemo}
-              className="px-3.5 py-1.5 rounded-lg bg-grape hover:bg-grape-hover text-white dark:bg-volt dark:text-slate-900 font-semibold text-xs transition active:scale-95 shadow-sm shrink-0 self-start sm:self-auto"
+              className="px-3.5 py-1.5 rounded-lg bg-grape hover:bg-grape-hover text-white dark:bg-volt dark:text-slate-900 font-semibold text-xs transition active:scale-95 shadow-sm shrink-0 self-start sm:self-auto focus-ring"
             >
               Hubungkan Key Asli
             </button>
@@ -149,14 +149,14 @@ export default function App() {
 
         {/* Error Banner */}
         {errorBanner && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in" role="alert">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{errorBanner}</span>
             </div>
             <button
               onClick={() => setErrorBanner(null)}
-              className="text-xs font-semibold hover:underline"
+              className="text-xs font-semibold hover:underline focus-ring rounded px-1.5 py-0.5"
             >
               Tutup
             </button>
@@ -165,9 +165,9 @@ export default function App() {
 
         {/* Loading overlay for initial sync */}
         {isSyncing && !summary && (
-          <div className="py-20 text-center space-y-3">
-            <Loader2 className="w-8 h-8 mx-auto animate-spin text-grape dark:text-volt" />
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+          <div className="py-20 text-center space-y-3" role="status" aria-live="polite">
+            <Loader2 className="w-8 h-8 mx-auto animate-spin text-grape dark:text-volt" aria-hidden="true" />
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
               Menghubungkan ke OpenRouter Gateway...
             </p>
           </div>

@@ -20,3 +20,9 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }
+
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-grape dark:focus-visible:ring-volt focus-visible:ring-offset-2 focus-visible:ring-offset-cloud dark:focus-visible:ring-offset-obsidian;
+  }
+}
