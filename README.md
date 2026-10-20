@@ -1,36 +1,42 @@
-# OpenRouter Usage Lens (Client-Side)
+# OpenRouter Usage Lens
 
-Dashboard privat, tanpa backend, dan zero-telemetry untuk memantau saldo, estimasi runway, dan penggunaan model AI di OpenRouter.
+[![AI-Generated](https://img.shields.io/badge/Code-100%25_AI_Generated-blueviolet?style=flat-square)](#)
+[![Built With](https://img.shields.io/badge/Model-Gemini_3.8_Flash-4285F4?style=flat-square&logo=google)](#)
+[![Method](https://img.shields.io/badge/Method-Prompting_Only-emerald?style=flat-square)](#)
 
-Dibangun dengan arsitektur Bring Your Own Key (BYOK): API key dan riwayat data kamu disimpan 100% di browser lokal (localStorage dan IndexedDB). Tidak ada data atau key yang dikirim ke server pihak ketiga.
+Dashboard web statis tanpa backend untuk memantau saldo, sisa hari (runway), dan penggunaan token model AI di OpenRouter.
 
-## Fitur Utama
+Semua request dikirim langsung dari browser ke API OpenRouter (CORS). API key dan histori data tersimpan lokal di browser (`localStorage` dan `IndexedDB`). Tidak ada server perantara atau telemetri pihak ketiga.
 
-- Privasi Penuh (Zero-Backend): Request dikirim langsung dari browser ke openrouter.ai melalui CORS resmi.
-- Hero Runway & Burn-Rate Gauge: Menampilkan sisa saldo USD & IDR, laju pengeluaran hari ini, serta estimasi sisa hari (runway) berdasarkan konsumsi 7 hari terakhir.
-- Tren Harian 14 Hari: Visualisasi bar chart interaktif dengan tooltip inspeksi model dominan pada hari tersebut.
-- Hierarki Model: Breakdown konsumsi token (prompt dan completion) per model AI (Claude, DeepSeek, GPT, Llama, Mistral, dll).
-- Konversi Kurs Otomatis: Kurs USD ke IDR di-update harian via Frankfurter API publik dengan cache 24 jam.
-- Backup & Restore Mandiri: Export seluruh riwayat transaksi ke file JSON lokal, dan import kembali saat berganti perangkat.
-- Anti-Slop Design: Mode gelap (Obsidian) dan terang (Cloud) berstandar WCAG AA, bebas dekorasi berlebihan, dan responsif di smartphone.
+> **Catatan Pembuatan (AI-Generated):**
+> Proyek ini dibuat 100% menggunakan model **Gemini 3.8 Flash** via prompting di Antigravity IDE. Tidak ada baris kode yang ditulis manual oleh pemilik repositori selain instruksi prompt.
+
+## Fitur
+
+- **Saldo & Estimasi Runway:** Menampilkan saldo USD & estimasi IDR, pengeluaran hari ini, dan proyeksi sisa hari berdasarkan rata-rata 7 hari.
+- **Riwayat Penggunaan:** Grafik batang konsumsi harian 14 hari terakhir dan model yang paling banyak dipakai per hari.
+- **Breakdown Model:** Rincian biaya dan token (prompt & completion) per model (Claude, GPT, DeepSeek, Llama, dll).
+- **Konversi Kurs Otomatis:** Mengambil kurs USD ke IDR harian via Frankfurter API publik dengan cache lokal 24 jam.
+- **Export & Import:** Backup data histori ke file JSON lokal dan restore tanpa login akun.
+- **UI Minimalis:** Tema gelap dan terang, tata letak responsif untuk desktop dan mobile.
 
 ## Teknologi
 
-- Vite 6 + React 18 + TypeScript
-- Tailwind CSS v3 (OpenRouter design tokens)
-- idb-keyval (IndexedDB client-side persistence)
-- Vitest (Unit testing engine)
+- Vite 8 + React 19 + TypeScript
+- Tailwind CSS v3
+- idb-keyval (IndexedDB wrapper)
+- Vitest
 
 ## Menjalankan Secara Lokal
 
-`ash
+```bash
 npm install
 npm run dev
 npm test
 npm run build
-`
+```
 
-File hasil build berada di folder dist/, siap di-host secara gratis di Vercel, Cloudflare Pages, atau GitHub Pages.
+Hasil build berada di direktori `dist/` dan dapat di-deploy ke static hosting (Vercel, Cloudflare Pages, GitHub Pages).
 
 ## Lisensi
 
