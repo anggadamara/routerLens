@@ -75,4 +75,11 @@ export interface Translations {
     dismiss: string;
     syncFailed: string;
   };
+  starPrompt: {
+    title: string;
+    desc: string;
+    starBtn: string;
+    laterBtn: string;
+    closeAria: string;
+  };
 }

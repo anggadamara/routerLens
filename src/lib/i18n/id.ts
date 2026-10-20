@@ -76,4 +76,11 @@ export const idTranslations: Translations = {
     dismiss: 'Tutup',
     syncFailed: 'Gagal sinkronisasi data',
   },
+  starPrompt: {
+    title: 'Suka dengan RouterLens?',
+    desc: 'Bantu berikan bintang di GitHub agar proyek ini makin berkembang dan menjangkau lebih banyak developer.',
+    starBtn: 'Beri Bintang di GitHub',
+    laterBtn: 'Nanti saja',
+    closeAria: 'Tutup ajakan bintang GitHub',
+  },
 };

@@ -1,5 +1,6 @@
 # RouterLens
 
+[![GitHub Repo](https://img.shields.io/badge/GitHub-anggadamara%2FrouterLens-181717?style=flat-square&logo=github)](https://github.com/anggadamara/routerLens)
 [![AI-Generated](https://img.shields.io/badge/Code-100%25_AI_Generated-blueviolet?style=flat-square)](#)
 [![Built With](https://img.shields.io/badge/Model-Gemini_3.8_Flash-4285F4?style=flat-square&logo=google)](#)
 [![Method](https://img.shields.io/badge/Method-Prompting_Only-emerald?style=flat-square)](#)

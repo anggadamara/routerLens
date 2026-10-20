@@ -76,4 +76,11 @@ export const enTranslations: Translations = {
     dismiss: 'Dismiss',
     syncFailed: 'Data synchronization failed',
   },
+  starPrompt: {
+    title: 'Enjoying RouterLens?',
+    desc: 'Give it a star on GitHub to support open-source development and help other developers find it.',
+    starBtn: 'Star on GitHub',
+    laterBtn: 'Maybe later',
+    closeAria: 'Close GitHub star prompt',
+  },
 };

@@ -14,6 +14,7 @@ import { HeroRunway } from './components/HeroRunway';
 import { TrendChart } from './components/TrendChart';
 import { ModelList } from './components/ModelList';
 import { SettingsModal } from './components/SettingsModal';
+import { StarPrompt } from './components/StarPrompt';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 function LensDashboard() {
@@ -203,6 +204,8 @@ function LensDashboard() {
           setApiKey(getSavedApiKey());
         }}
       />
+
+      <StarPrompt isVisibleTrigger={Boolean(summary)} />
     </div>
   );
 }
