@@ -32,7 +32,7 @@ export const HeroRunway: React.FC<HeroRunwayProps> = ({
             {formatUsd(remainingBalance)}
           </div>
           <div className="text-sm font-mono text-slate-500 dark:text-slate-400 tabular-nums">
-            � {formatRupiah(remainingBalanceIdr)}
+            ≈ {formatRupiah(remainingBalanceIdr)}
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export const HeroRunway: React.FC<HeroRunwayProps> = ({
           </div>
           <div className="flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-slate-400">
             <span>{formatRupiah(todayUsageIdr)}</span>
-            <span className="text-slate-300 dark:text-slate-600">�</span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
             <span className="flex items-center gap-1 text-[11px]">
               <TrendingUp className="w-3 h-3 text-slate-400" />
               <span>Rata-rata: {formatUsd(p7DailyAverage)}</span>

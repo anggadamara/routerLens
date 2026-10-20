@@ -87,7 +87,7 @@ export const ModelList: React.FC<ModelListProps> = ({ models }) => {
                 <span>{item.percentage.toFixed(1)}% dari total spend</span>
                 <span className="flex items-center gap-2">
                   <span>Prompt: {formatTokens(item.promptTokens)}</span>
-                  <span>�</span>
+                  <span>•</span>
                   <span>Compl: {formatTokens(item.completionTokens)}</span>
                 </span>
               </div>
