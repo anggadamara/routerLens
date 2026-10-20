@@ -11,6 +11,12 @@ export interface ActivityRecord {
   provider_name?: string;
 }
 
+export interface FxMetadata {
+  rate: number;
+  updatedAt: string;
+  source: string;
+}
+
 export interface TelemetrySummary {
   keyLabel: string;
   totalCredits: number;
@@ -22,6 +28,7 @@ export interface TelemetrySummary {
   todayUsageIdr: number;
   p7DailyAverage: number;
   fxRate: number;
+  fxUpdatedAt: string | null;
   lastSyncTime: string | null;
   dailyTrend: Array<{
     date: string;
@@ -91,17 +98,23 @@ export async function clearAllTelemetryData(): Promise<void> {
   }
 }
 
-export async function getExchangeRate(): Promise<number> {
-  try {
-    const cached = localStorage.getItem(STORAGE_KEY_FX);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 && parsed.rate > 0) {
-        return parsed.rate;
+export async function getExchangeRateMeta(forceFresh = false): Promise<FxMetadata> {
+  if (!forceFresh) {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY_FX);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000 && parsed.rate > 0) {
+          return {
+            rate: parsed.rate,
+            updatedAt: new Date(parsed.timestamp).toISOString(),
+            source: 'api.frankfurter.dev (cache)',
+          };
+        }
       }
+    } catch {
+      // ignore parse error
     }
-  } catch {
-    // ignore parse error
   }
 
   try {
@@ -109,14 +122,23 @@ export async function getExchangeRate(): Promise<number> {
     if (res.ok) {
       const data = await res.json();
       const rate = data?.rates?.IDR || DEFAULT_FX_RATE;
-      localStorage.setItem(STORAGE_KEY_FX, JSON.stringify({ rate, timestamp: Date.now() }));
-      return rate;
+      const now = Date.now();
+      localStorage.setItem(STORAGE_KEY_FX, JSON.stringify({ rate, timestamp: now }));
+      return {
+        rate,
+        updatedAt: new Date(now).toISOString(),
+        source: 'api.frankfurter.dev (live)',
+      };
     }
   } catch {
     // fallback
   }
 
-  return DEFAULT_FX_RATE;
+  return {
+    rate: DEFAULT_FX_RATE,
+    updatedAt: new Date().toISOString(),
+    source: 'Default Fallback',
+  };
 }
 
 export function computeSummaryFromActivity(
@@ -124,7 +146,8 @@ export function computeSummaryFromActivity(
   totalCredits: number,
   totalUsage: number,
   keyLabel: string,
-  fxRate: number
+  fxRate: number,
+  fxUpdatedAt: string | null = null
 ): TelemetrySummary {
   const remainingBalance = Math.max(0, totalCredits - totalUsage);
   const remainingBalanceIdr = remainingBalance * fxRate;
@@ -214,17 +237,18 @@ export function computeSummaryFromActivity(
     todayUsageIdr: todayUsage * fxRate,
     p7DailyAverage,
     fxRate,
+    fxUpdatedAt,
     lastSyncTime: new Date().toISOString(),
     dailyTrend,
     modelBreakdown,
   };
 }
 
-export async function syncTelemetry(): Promise<TelemetrySummary> {
+export async function syncTelemetry(forceFreshFx = false): Promise<TelemetrySummary> {
   const apiKey = getSavedApiKey();
   if (!apiKey) throw new Error('API key belum diatur.');
 
-  const fxRate = await getExchangeRate();
+  const fx = await getExchangeRateMeta(forceFreshFx);
   const keyLabel = localStorage.getItem(STORAGE_KEY_LABEL) || 'Personal Key';
 
   const creditsRes = await fetch('https://openrouter.ai/api/v1/credits', {
@@ -282,7 +306,8 @@ export async function syncTelemetry(): Promise<TelemetrySummary> {
     totalCredits,
     totalUsage,
     keyLabel,
-    fxRate
+    fx.rate,
+    fx.updatedAt
   );
 
   localStorage.setItem(STORAGE_KEY_SUMMARY, JSON.stringify(summary));

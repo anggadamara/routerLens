@@ -1,15 +1,18 @@
 import React from 'react';
-import { RefreshCw, Sun, Moon, Settings, LogOut } from 'lucide-react';
+import { RefreshCw, Sun, Moon, Settings, LogOut, ArrowUpDown } from 'lucide-react';
 import { formatRupiah, formatRelativeTime } from '../lib/format';
 import { OpenRouterLensGlyph } from './BrandLogo';
 
 interface HeaderProps {
   keyLabel: string;
   fxRate: number;
+  fxUpdatedAt: string | null;
   lastSyncTime: string | null;
   isSyncing: boolean;
+  isUpdatingFx: boolean;
   theme: 'light' | 'dark';
   onSync: () => void;
+  onRefreshFx: () => void;
   onOpenSettings: () => void;
   onDisconnect: () => void;
   onToggleTheme: () => void;
@@ -18,10 +21,13 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   keyLabel,
   fxRate,
+  fxUpdatedAt,
   lastSyncTime,
   isSyncing,
+  isUpdatingFx,
   theme,
   onSync,
+  onRefreshFx,
   onOpenSettings,
   onDisconnect,
   onToggleTheme,
@@ -47,9 +53,20 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="hidden md:flex items-center px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.04] text-xs font-mono text-slate-600 dark:text-slate-300">
-            $1 = {formatRupiah(fxRate)}
-          </div>
+          {/* Interactive FX Rate Button */}
+          <button
+            onClick={onRefreshFx}
+            disabled={isUpdatingFx}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] hover:border-slate-300 dark:hover:border-white/[0.15] text-xs font-mono text-slate-700 dark:text-slate-200 transition active:scale-95 group cursor-pointer"
+            title={`Kurs USD/IDR diperbarui: ${formatRelativeTime(fxUpdatedAt)} (Frankfurter API). Klik untuk update live.`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span>$1 = {formatRupiah(fxRate)}</span>
+            <span className="text-[10px] text-slate-400 font-sans ml-0.5 opacity-80">
+              ({formatRelativeTime(fxUpdatedAt)})
+            </span>
+            <ArrowUpDown className={`w-3 h-3 text-slate-400 group-hover:text-grape dark:group-hover:text-volt transition ml-0.5 ${isUpdatingFx ? 'animate-spin' : ''}`} />
+          </button>
 
           <button
             onClick={onSync}

@@ -12,6 +12,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState<string | null>(getSavedApiKey());
   const [summary, setSummary] = useState<TelemetrySummary | null>(getStoredTelemetry());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isUpdatingFx, setIsUpdatingFx] = useState<boolean>(false);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -31,13 +32,13 @@ export default function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const handleSync = useCallback(async () => {
+  const handleSync = useCallback(async (forceFreshFx = false) => {
     if (!apiKey) return;
     setIsSyncing(true);
     setErrorBanner(null);
 
     try {
-      const data = await syncTelemetry();
+      const data = await syncTelemetry(forceFreshFx);
       setSummary(data);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Gagal sinkronisasi data';
@@ -46,6 +47,15 @@ export default function App() {
       setIsSyncing(false);
     }
   }, [apiKey]);
+
+  const handleRefreshFx = async () => {
+    setIsUpdatingFx(true);
+    try {
+      await handleSync(true);
+    } finally {
+      setIsUpdatingFx(false);
+    }
+  };
 
   useEffect(() => {
     if (apiKey && !summary) {
@@ -74,10 +84,13 @@ export default function App() {
       <Header
         keyLabel={summary?.keyLabel || 'Personal Key'}
         fxRate={summary?.fxRate || 16500}
+        fxUpdatedAt={summary?.fxUpdatedAt || null}
         lastSyncTime={summary?.lastSyncTime || null}
         isSyncing={isSyncing}
+        isUpdatingFx={isUpdatingFx}
         theme={theme}
-        onSync={handleSync}
+        onSync={() => handleSync(false)}
+        onRefreshFx={handleRefreshFx}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onDisconnect={handleDisconnect}
         onToggleTheme={toggleTheme}
