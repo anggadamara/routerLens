@@ -2,6 +2,7 @@
   "name": "openrouter-lens-web",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://routerlens-prod.vercel.app",
   "type": "module",
   "scripts": {
     "dev": "vite",

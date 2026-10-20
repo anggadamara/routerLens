@@ -1,9 +1,12 @@
 # RouterLens
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-routerlens--prod.vercel.app-000000?style=flat-square&logo=vercel)](https://routerlens-prod.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-anggadamara%2FrouterLens-181717?style=flat-square&logo=github)](https://github.com/anggadamara/routerLens)
 [![AI-Generated](https://img.shields.io/badge/Code-100%25_AI_Generated-blueviolet?style=flat-square)](#)
 [![Built With](https://img.shields.io/badge/Model-Gemini_3.8_Flash-4285F4?style=flat-square&logo=google)](#)
 [![Method](https://img.shields.io/badge/Method-Prompting_Only-emerald?style=flat-square)](#)
+
+> 🌐 **Akses Aplikasi Langsung:** [https://routerlens-prod.vercel.app/](https://routerlens-prod.vercel.app/)
 
 Dashboard web statis tanpa backend untuk memantau saldo, estimasi runway, dan riwayat penggunaan model OpenRouter secara privat.
 
