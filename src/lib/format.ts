@@ -26,16 +26,16 @@ export function formatTokens(tokens: number): string {
   return tokens.toLocaleString('id-ID');
 }
 
-export function formatRelativeTime(dateString: string | null): string {
+export function formatRelativeTime(dateString: string | null, locale: 'en' | 'id' = 'id'): string {
   if (!dateString) return '-';
   const time = new Date(dateString).getTime();
   if (isNaN(time)) return '-';
   const diffSec = Math.floor((Date.now() - time) / 1000);
-  if (diffSec < 60) return 'Baru saja';
+  if (diffSec < 60) return locale === 'en' ? 'Just now' : 'Baru saja';
   const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m lalu`;
+  if (diffMin < 60) return locale === 'en' ? `${diffMin}m ago` : `${diffMin}m lalu`;
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour}j lalu`;
+  if (diffHour < 24) return locale === 'en' ? `${diffHour}h ago` : `${diffHour}j lalu`;
   const diffDay = Math.floor(diffHour / 24);
-  return `${diffDay}h lalu`;
+  return locale === 'en' ? `${diffDay}d ago` : `${diffDay}h lalu`;
 }

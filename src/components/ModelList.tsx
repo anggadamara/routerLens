@@ -2,6 +2,7 @@ import React from 'react';
 import { Cpu } from 'lucide-react';
 import { formatUsd, formatRupiah, formatTokens } from '../lib/format';
 import { BrandLogo } from './BrandLogo';
+import { useI18n } from '../lib/i18n';
 
 interface ModelBreakdownItem {
   model: string;
@@ -17,13 +18,15 @@ interface ModelListProps {
 }
 
 export const ModelList: React.FC<ModelListProps> = ({ models }) => {
+  const { t, isId } = useI18n();
+
   if (models.length === 0) {
     return (
       <div className="w-full rounded-2xl bg-white dark:bg-panel-dark border border-slate-200 dark:border-white/[0.08] p-8 text-center text-slate-600 dark:text-slate-400">
         <Cpu className="w-8 h-8 mx-auto mb-2 opacity-50" aria-hidden="true" />
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Belum ada riwayat model</p>
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t.models.emptyTitle}</p>
         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-          Data konsumsi akan muncul otomatis setelah Anda melakukan panggilan API di OpenRouter.
+          {t.models.emptyDesc}
         </p>
       </div>
     );
@@ -34,9 +37,9 @@ export const ModelList: React.FC<ModelListProps> = ({ models }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-grape dark:text-volt" aria-hidden="true" />
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Hierarki Model Terbanyak Digunakan</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{t.models.title}</h2>
         </div>
-        <span className="text-xs text-slate-600 dark:text-slate-400">{models.length} Model Terdata</span>
+        <span className="text-xs text-slate-600 dark:text-slate-400">{t.models.count(models.length)}</span>
       </div>
 
       <div className="space-y-3">
@@ -71,9 +74,11 @@ export const ModelList: React.FC<ModelListProps> = ({ models }) => {
                   <div className="text-xs font-bold font-mono text-slate-900 dark:text-white tabular-nums">
                     {formatUsd(item.costUsd)}
                   </div>
-                  <div className="text-[10px] font-mono text-slate-600 dark:text-slate-400 tabular-nums">
-                    {formatRupiah(item.costIdr)}
-                  </div>
+                  {isId && (
+                    <div className="text-[10px] font-mono text-slate-600 dark:text-slate-400 tabular-nums">
+                      {formatRupiah(item.costIdr)}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -84,7 +89,7 @@ export const ModelList: React.FC<ModelListProps> = ({ models }) => {
                 aria-valuenow={item.percentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`Persentase spend untuk ${modelName}: ${item.percentage.toFixed(1)}%`}
+                aria-label={t.models.spendPercentageAria(modelName, item.percentage)}
               >
                 <div
                   style={{ width: `${Math.max(item.percentage, 2)}%` }}
@@ -93,11 +98,11 @@ export const ModelList: React.FC<ModelListProps> = ({ models }) => {
               </div>
 
               <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400 font-mono">
-                <span>{item.percentage.toFixed(1)}% dari total spend</span>
+                <span>{t.models.totalSpendPct(item.percentage)}</span>
                 <span className="flex items-center gap-2">
-                  <span>Prompt: {formatTokens(item.promptTokens)}</span>
+                  <span>{t.models.prompt}: {formatTokens(item.promptTokens)}</span>
                   <span aria-hidden="true">•</span>
-                  <span>Compl: {formatTokens(item.completionTokens)}</span>
+                  <span>{t.models.completion}: {formatTokens(item.completionTokens)}</span>
                 </span>
               </div>
             </div>

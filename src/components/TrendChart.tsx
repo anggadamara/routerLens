@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { formatUsd, formatRupiah } from '../lib/format';
+import { useI18n } from '../lib/i18n';
 
 interface TrendChartProps {
   dailyTrend: Array<{
@@ -12,6 +13,7 @@ interface TrendChartProps {
 }
 
 export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
+  const { t, isId } = useI18n();
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const maxCost = Math.max(...dailyTrend.map((d) => d.costUsd), 0.01);
@@ -30,9 +32,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-grape dark:text-volt" aria-hidden="true" />
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Tren Pengeluaran 14 Hari</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{t.trend.title}</h2>
         </div>
-        <span className="text-xs text-slate-600 dark:text-slate-400">Puncak: {formatUsd(maxCost)}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-400">{t.trend.peak(formatUsd(maxCost))}</span>
       </div>
 
       <div className="relative">
@@ -46,7 +48,12 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
                 key={item.date}
                 tabIndex={0}
                 role="button"
-                aria-label={`Tanggal ${item.date}, pengeluaran ${formatUsd(item.costUsd)} (${formatRupiah(item.costIdr)})${item.topModel && item.topModel !== '-' ? `, model teratas ${item.topModel}` : ''}`}
+                aria-label={t.trend.ariaBar(
+                  item.date,
+                  formatUsd(item.costUsd),
+                  isId ? formatRupiah(item.costIdr) : undefined,
+                  item.topModel
+                )}
                 className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative focus-ring rounded-md"
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
@@ -66,12 +73,14 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyTrend }) => {
                     <div className="font-mono text-sm font-bold text-volt mt-0.5">
                       {formatUsd(item.costUsd)}
                     </div>
-                    <div className="text-[11px] text-slate-300 font-mono">
-                      {formatRupiah(item.costIdr)}
-                    </div>
+                    {isId && (
+                      <div className="text-[11px] text-slate-300 font-mono">
+                        {formatRupiah(item.costIdr)}
+                      </div>
+                    )}
                     {item.topModel && item.topModel !== '-' && (
                       <div className="mt-1 pt-1 border-t border-white/10 text-[10px] text-slate-300">
-                        Top: <span className="text-white font-mono">{item.topModel.split('/')[1] || item.topModel}</span>
+                        {t.trend.top}: <span className="text-white font-mono">{item.topModel.split('/')[1] || item.topModel}</span>
                       </div>
                     )}
                   </div>

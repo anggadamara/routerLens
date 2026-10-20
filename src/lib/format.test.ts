@@ -19,9 +19,19 @@ describe('format utilities', () => {
     expect(formatTokens(3400000)).toBe('3.4M');
   });
 
-  it('formats relative time safely', () => {
+  it('formats relative time safely in both id and en', () => {
     expect(formatRelativeTime(null)).toBe('-');
     expect(formatRelativeTime('invalid-date')).toBe('-');
-    expect(formatRelativeTime(new Date().toISOString())).toBe('Baru saja');
+    const nowIso = new Date().toISOString();
+    expect(formatRelativeTime(nowIso, 'id')).toBe('Baru saja');
+    expect(formatRelativeTime(nowIso, 'en')).toBe('Just now');
+
+    const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(tenMinsAgo, 'id')).toBe('10m lalu');
+    expect(formatRelativeTime(tenMinsAgo, 'en')).toBe('10m ago');
+
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(twoDaysAgo, 'id')).toBe('2h lalu');
+    expect(formatRelativeTime(twoDaysAgo, 'en')).toBe('2d ago');
   });
 });

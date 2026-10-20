@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { X, Download, Upload, Trash2, ShieldAlert } from 'lucide-react';
 import { exportTelemetryJson, importTelemetryJson, clearAllTelemetryData } from '../lib/telemetry';
+import { useI18n } from '../lib/i18n';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onDataChanged }) => {
+  const { t } = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -66,7 +68,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Gagal export data: ' + err);
+      alert(t.settings.exportFailed + err);
     }
   };
 
@@ -80,11 +82,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
       if (content) {
         const success = await importTelemetryJson(content);
         if (success) {
-          alert('Data backup berhasil di-restore!');
+          alert(t.settings.importSuccess);
           onDataChanged();
           onClose();
         } else {
-          alert('Format file JSON tidak valid.');
+          alert(t.settings.importInvalid);
         }
       }
     };
@@ -92,9 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
   };
 
   const handleClearAll = async () => {
-    const confirm = window.confirm(
-      'Yakin ingin menghapus seluruh API key dan data riwayat lokal di browser ini? Aksi ini tidak dapat dibatalkan.'
-    );
+    const confirm = window.confirm(t.settings.clearConfirm);
     if (confirm) {
       await clearAllTelemetryData();
       onDataChanged();
@@ -118,14 +118,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
       >
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-4">
           <h2 id="modal-title" className="text-base font-bold text-slate-900 dark:text-white">
-            Pengaturan & Backup Data
+            {t.settings.title}
           </h2>
           <button
             ref={closeBtnRef}
             onClick={onClose}
-            aria-label="Tutup jendela pengaturan"
+            aria-label={t.common.close}
             className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition focus-ring"
-            title="Tutup (Esc)"
+            title={`${t.common.close} (Esc)`}
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
@@ -134,10 +134,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
         <div className="space-y-4 text-xs">
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
-              Backup Riwayat Lokal
+              {t.settings.backupSection}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
-              Export data penggunaan dan cache ke file JSON lokal agar bisa dipindahkan ke perangkat lain.
+              {t.settings.backupDesc}
             </p>
             <div className="flex gap-2">
               <button
@@ -145,7 +145,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 className="flex-1 min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-slate-300 dark:border-white/[0.1] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-slate-800 dark:text-slate-200 font-semibold transition focus-ring"
               >
                 <Download className="w-4 h-4 text-grape dark:text-volt" aria-hidden="true" />
-                <span>Export JSON</span>
+                <span>{t.settings.exportJson}</span>
               </button>
 
               <button
@@ -153,7 +153,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 className="flex-1 min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-slate-300 dark:border-white/[0.1] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-slate-800 dark:text-slate-200 font-semibold transition focus-ring"
               >
                 <Upload className="w-4 h-4 text-grape dark:text-volt" aria-hidden="true" />
-                <span>Import JSON</span>
+                <span>{t.settings.importJson}</span>
               </button>
               <input
                 ref={fileInputRef}
@@ -161,7 +161,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 accept=".json"
                 onChange={handleImportFile}
                 className="hidden"
-                aria-label="Pilih file backup JSON untuk di-import"
+                aria-label={t.settings.fileInputAria}
               />
             </div>
           </div>
@@ -169,17 +169,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
           <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06]">
             <h3 className="font-semibold text-red-600 dark:text-red-400 mb-1.5 flex items-center gap-1.5">
               <ShieldAlert className="w-4 h-4" aria-hidden="true" />
-              <span>Zona Berbahaya</span>
+              <span>{t.settings.dangerZone}</span>
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
-              Menghapus API key, cache sesi, dan seluruh database IndexedDB dari browser ini.
+              {t.settings.dangerDesc}
             </p>
             <button
               onClick={handleClearAll}
               className="w-full min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-400 font-semibold transition border border-red-500/20 focus-ring"
             >
               <Trash2 className="w-4 h-4" aria-hidden="true" />
-              <span>Hapus Semua Data & Putuskan Key</span>
+              <span>{t.settings.clearAllBtn}</span>
             </button>
           </div>
         </div>

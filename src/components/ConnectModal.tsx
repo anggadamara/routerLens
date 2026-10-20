@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Key, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Key, Sparkles, Languages } from 'lucide-react';
 import { validateAndSaveApiKey } from '../lib/telemetry';
 import { OpenRouterLensGlyph } from './BrandLogo';
+import { useI18n } from '../lib/i18n';
 
 interface ConnectModalProps {
   onConnected: () => void;
@@ -9,6 +10,7 @@ interface ConnectModalProps {
 }
 
 export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDemo }) => {
+  const { locale, toggleLocale, t } = useI18n();
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,27 +29,41 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
     if (res.valid) {
       onConnected();
     } else {
-      setErrorMessage(res.error || 'Verifikasi API key gagal.');
+      setErrorMessage(res.error || (locale === 'en' ? 'API key verification failed.' : 'Verifikasi API key gagal.'));
     }
   };
 
   return (
     <div className="min-h-screen bg-cloud dark:bg-obsidian text-slate-900 dark:text-cloud flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-panel-dark border border-slate-200 dark:border-white/[0.08] p-6 sm:p-8 shadow-xl">
-        <div className="flex flex-col items-center text-center mb-6">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-panel-dark border border-slate-200 dark:border-white/[0.08] p-6 sm:p-8 shadow-xl relative">
+        {/* Language switch button */}
+        <div className="absolute top-4 right-4">
+          <button
+            type="button"
+            onClick={toggleLocale}
+            aria-label={`${t.common.switchLang} (${locale === 'en' ? 'Bahasa Indonesia' : 'English'})`}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/[0.15] transition active:scale-95 focus-ring font-mono text-xs font-semibold"
+            title={`${t.common.switchLang}: ${locale === 'en' ? 'Bahasa Indonesia' : 'English'}`}
+          >
+            <Languages className="w-3.5 h-3.5 text-grape dark:text-volt" aria-hidden="true" />
+            <span className="uppercase text-[11px] font-bold">{locale}</span>
+          </button>
+        </div>
+
+        <div className="flex flex-col items-center text-center mb-6 pt-2">
           <div className="w-14 h-14 rounded-2xl bg-grape/10 dark:bg-volt/10 border border-grape/25 dark:border-volt/25 flex items-center justify-center mb-3 text-grape dark:text-volt">
             <OpenRouterLensGlyph className="w-8 h-8" aria-hidden="true" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">OpenRouter Usage Lens</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t.connect.title}</h1>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-xs">
-            Monitor saldo, runway estimasi, dan konsumsi model secara privat langsung dari browser.
+            {t.connect.subtitle}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1.5" htmlFor="api-key-input">
-              OpenRouter API Key
+              {t.connect.apiKeyLabel}
             </label>
             <div className="relative">
               <input
@@ -55,7 +71,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
                 type={showKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-or-v1-..."
+                placeholder={t.connect.placeholder}
                 autoFocus
                 autoComplete="off"
                 autoCorrect="off"
@@ -66,7 +82,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                aria-label={showKey ? 'Sembunyikan karakter API key' : 'Tampilkan karakter API key'}
+                aria-label={showKey ? t.connect.hideKey : t.connect.showKey}
                 className="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition p-1.5 rounded-lg focus-ring"
               >
                 {showKey ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
@@ -87,11 +103,11 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                <span>Memverifikasi Key...</span>
+                <span>{t.connect.verifying}</span>
               </>
             ) : (
               <>
-                <span>Hubungkan Key</span>
+                <span>{t.connect.connectBtn}</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </>
             )}
@@ -101,7 +117,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
         <div className="relative my-4 flex items-center justify-center">
           <div className="border-t border-slate-200 dark:border-white/[0.08] w-full" aria-hidden="true" />
           <span className="bg-white dark:bg-panel-dark px-2 text-[11px] uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold absolute">
-            atau
+            {t.common.or}
           </span>
         </div>
 
@@ -111,20 +127,20 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({ onConnected, onTryDe
           className="w-full min-h-[42px] flex items-center justify-center gap-2 py-2 rounded-xl border border-slate-300 dark:border-white/[0.1] bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-800 dark:text-slate-200 text-xs font-semibold transition active:scale-[0.98] focus-ring"
         >
           <Sparkles className="w-3.5 h-3.5 text-grape dark:text-volt" aria-hidden="true" />
-          <span>Coba Mode Demo (Data Simulasi Tanpa Key)</span>
+          <span>{t.connect.demoBtn}</span>
         </button>
 
         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.06] space-y-2.5">
           <div className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
             <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
             <span>
-              <strong>100% Client-Side:</strong> Key tersimpan eksklusif di <code className="text-[11px] font-mono bg-slate-100 dark:bg-white/[0.06] px-1 py-0.5 rounded">localStorage</code> browser Anda. Zero server, zero telemetri.
+              <strong>{t.connect.privacyTitle}</strong> {t.connect.privacyDesc}
             </span>
           </div>
           <div className="flex items-start gap-2 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
             <Key className="w-4 h-4 text-grape dark:text-volt shrink-0 mt-0.5" aria-hidden="true" />
             <span>
-              <strong>Ragu masukin key?</strong> Buat key baru dengan <em>credit limit</em> terpisah di <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-grape dark:text-volt underline font-medium focus-ring rounded">openrouter.ai/keys</a> atau buka tab Network (F12) untuk verifikasi.
+              <strong>{t.connect.doubtsTitle}</strong> {t.connect.doubtsDesc}
             </span>
           </div>
         </div>

@@ -7,6 +7,7 @@ import {
   getMockTelemetrySummary,
   type TelemetrySummary,
 } from './lib/telemetry';
+import { I18nProvider, useI18n } from './lib/i18n';
 import { ConnectModal } from './components/ConnectModal';
 import { Header } from './components/Header';
 import { HeroRunway } from './components/HeroRunway';
@@ -15,7 +16,8 @@ import { ModelList } from './components/ModelList';
 import { SettingsModal } from './components/SettingsModal';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
-export default function App() {
+function LensDashboard() {
+  const { t } = useI18n();
   const [apiKey, setApiKey] = useState<string | null>(getSavedApiKey());
   const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [summary, setSummary] = useState<TelemetrySummary | null>(getStoredTelemetry());
@@ -58,12 +60,12 @@ export default function App() {
       const data = await syncTelemetry(forceFreshFx);
       setSummary(data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Gagal sinkronisasi data';
+      const message = err instanceof Error ? err.message : t.banners.syncFailed;
       setErrorBanner(message);
     } finally {
       setIsSyncing(false);
     }
-  }, [apiKey, isDemoMode]);
+  }, [apiKey, isDemoMode, t.banners.syncFailed]);
 
   const handleRefreshFx = async () => {
     setIsUpdatingFx(true);
@@ -135,14 +137,14 @@ export default function App() {
             <div className="flex items-center gap-2.5">
               <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>
-                <strong>Mode Demo Aktif:</strong> Anda sedang menjelajahi fitur dengan data simulasi (tanpa API key).
+                <strong>{t.banners.demoActiveTitle}</strong> {t.banners.demoActiveDesc}
               </span>
             </div>
             <button
               onClick={handleExitDemo}
               className="px-3.5 py-1.5 rounded-lg bg-grape hover:bg-grape-hover text-white dark:bg-volt dark:text-slate-900 font-semibold text-xs transition active:scale-95 shadow-sm shrink-0 self-start sm:self-auto focus-ring"
             >
-              Hubungkan Key Asli
+              {t.banners.demoConnectBtn}
             </button>
           </div>
         )}
@@ -158,7 +160,7 @@ export default function App() {
               onClick={() => setErrorBanner(null)}
               className="text-xs font-semibold hover:underline focus-ring rounded px-1.5 py-0.5"
             >
-              Tutup
+              {t.banners.dismiss}
             </button>
           </div>
         )}
@@ -168,7 +170,7 @@ export default function App() {
           <div className="py-20 text-center space-y-3" role="status" aria-live="polite">
             <Loader2 className="w-8 h-8 mx-auto animate-spin text-grape dark:text-volt" aria-hidden="true" />
             <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              Menghubungkan ke OpenRouter Gateway...
+              {t.banners.gatewayLoading}
             </p>
           </div>
         )}
@@ -202,5 +204,13 @@ export default function App() {
         }}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <I18nProvider>
+      <LensDashboard />
+    </I18nProvider>
   );
 }
